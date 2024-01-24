@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3307:3306"
+    networks:
+      - mynetwork
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "8080:80"
+    networks:
+      - mynetwork
+
+  create_user_if_not_exists:
+    image: mysql:latest
+    command: sh -c "if ! mysql -hmysql -uadmin -padmin -e 'use mydatabase'; then \
+                    mysql -hmysql -uadmin -padmin -e 'create user '\''admin'\''@'\''%'\'' identified by '\''admin'\''; \
+                    grant all privileges on *.* to '\''admin'\''@'\''%'\'' with grant option; \
+                    flush privileges; \
+                    fi"
+    depends_on:
+      - mysql
+
+networks:
+  mynetwork:
+
