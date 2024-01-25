@@ -4,6 +4,10 @@ class Creators{
     constructor(){}
 
 
+    checkEmailPass(email, password){
+        return db.execute(`SELECT *  FROM creators WHERE email='${email}' `)
+    }
+
     dummy(){
         return db.execute("select * from creators")
     }
@@ -30,7 +34,25 @@ class Creators{
         );
     }
 
- 
+    verifySignupToken(token){
+        return db.execute(`
+
+        `)
+    }
+
+    updateVeriTok(token){
+        return db.execute(`UPDATE creators SET verificationToken='${token}'`)
+    }
+
+
+    getAllNFTS(){
+        return db.execute(`
+        SELECT c.firstName, c.displayImage , n.fixedprice, n.image  
+    FROM creators c 
+    INNER JOIN  nfts n
+    ON (c.creatorID = n.ownerWallet);        
+        `)
+    }
 
 
 }
