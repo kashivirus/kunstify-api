@@ -1,0 +1,23 @@
+// creatores
+creatorID,username,walletAddress,firstName,email,password,type,lastName,bio,displayImage,coverImage,createdAt,otp,verificationToken,verified
+
+
+// nfts
+nft_id,tokenId,title,description,image,nftType,video,creatorwallet,ownerwallet,sale,auction,fixedprice,transactionHash,categoryId,status,created_at
+const mintArt = async (req, res, next) => {
+
+    try {
+        const image = req.file.image    
+        if(image == undefined) return res.status(401).json({message:"Invalid Image"})
+        
+        console.log(image);
+        
+        const payload  = req.body
+        
+        if(payload.length >1){
+            res.json(payload)
+        }
+    } catch (error) {
+        res.status(500).json({message:error.message})
+    }
+};

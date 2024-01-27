@@ -3,6 +3,9 @@ Dailt-tution/
 email
 email/
 
+mail-otp-mongo
+/mail-otp-mongo
+
 # Node.js
 node_modules/
 

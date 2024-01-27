@@ -30,3 +30,25 @@ this is used for instance-specific properties and methods.
 const is used for declaring constants within methods or for defining constant values specific to instances.
 static is used for methods or properties that are associated with the class itself, not with instances.
 In the context of classes, it's common to use this for instance methods, const for constants within methods or class instances, and static for methods or properties associated with the class itself. The choice depends on the specific requirements and design of your application.
+
+
+
+
+
+
+    when  updated
+
+
+"a": {
+        "fieldCount": 0,
+        "affectedRows": 1,
+        "insertId": 26,
+        "info": "",
+        "serverStatus": 2,
+        "warningStatus": 0,
+        "changedRows": 0
+    }
+
+    when select query is doe 
+
+    const [rows , field]  = await creators.dosomeQuery()
