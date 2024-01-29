@@ -84,9 +84,11 @@ const signUp = async(req, res)=>{
 
 
 const verifySignupToken = async(req, res)=>{
-
+    const token = req.params
     try {
+        
         const [rows, fields] = await creators.verifySignupToken(token)
+        // console.log(rows)
         if(rows && rows.length > 0){
             let userTime = new Date(rows[0].createdAt)
             let currentTime = new Date()
@@ -160,7 +162,8 @@ const signInVerify = async(req, res) =>{
                 verified : data[0].verified
             }
 
-
+            req.user = data[0]
+            console.log(req.user)
             res.status(200).json(sends)
         }
 
@@ -195,7 +198,7 @@ const mintArt = async (req, res, next) => {
     const payload = req.body
     try {
         const [a ,b ]   = await creators.mintArt( payload , req.image , req.video)
-        res.json({a, b})
+        res.json({message:"art has been uploaded" , a, b})
     } catch (error) {
         return next({ code: 401, message: error });
     }
@@ -212,7 +215,9 @@ const putOnFixPrice = async(req, res, next)=>{
             const [data] = await creators.putOnFixPrice(payload)
 
             if(data){
-                res.json(data)
+                // res.json(data)
+                const [rows, fields] = await creators.uPfpStatus()
+                res.json({message:"nft has been put on fixedPrice"})
             }else{
                 res.json({message:"some error"})
             }
@@ -292,6 +297,90 @@ const bidding = async(req, res, next) =>{
 
 
 
+const getAllArts = async(req, res, next) =>{
+    
+    try {
+        const [rows, fields] = await creators.getAllArts()
+
+        if(rows && rows.length >1){
+            if(rows[0]){
+                return res.status(200),json({nfts:rows[0]})
+            }else{
+                return next({ code: 401, message: error });
+            }
+        }else{
+            return next({ code: 401, message: "no data in the database" });
+            // this wont work no real data is init with some kind of 
+        }
+    } catch (error) {
+        return next({ code: 401, message: error.message });
+    }
+}
+
+
+const getAlCreater = async(req, res, next)=>{
+    try {
+        const [rows, fields] = await creators.getAllCreaters()
+
+        if(rows && rows.length >1){
+            if(rows[0]){
+                return res.status(200),json({createrAll:rows[0]})
+            }else{
+                return next({ code: 401, message: error });
+            }
+        }else{
+            return next({ code: 401, message: "no data in the database" });
+            // this wont work no real data is init with some kind of 
+        }
+    } catch (error) {
+        return next({ code: 401, message: error.message });
+    }
+}   
+
+
+
+const getSingleCreater  =  async(req, res)=>{
+    
+    try {
+        const [rows, fields] = await creators.getSingleCreator(req.body.creater , req.body.walletAddress)
+
+        if(rows && rows.length >1){
+            if(rows[0]){
+                return res.status(200),json({createrAll:rows[0]})
+            }else{
+                return next({ code: 401, message: error });
+            }
+        }else{
+            return next({ code: 401, message: "no data in the database" });
+            // this wont work no real data is init with some kind of 
+        }
+    } catch (error) {
+        return next({ code: 401, message: error.message });
+    }
+}
+
+
+
+const getSingleArts  =  async(req, res)=>{
+    
+    try {
+        const [rows, fields] = await creators.getSingleArts(req.body.name)
+
+        if(rows && rows.length >1){
+            if(rows[0]){
+                return res.status(200),json({createrAll:rows[0]})
+            }else{
+                return next({ code: 401, message: error });
+            }
+        }else{
+            return next({ code: 401, message: "no data in the database" });
+            // this wont work no real data is init with some kind of 
+        }
+    } catch (error) {
+        return next({ code: 401, message: error.message });
+    }
+}
+
 
 
 export{ 
@@ -305,7 +394,11 @@ export{
     putOnFixPrice,
     putOnAuctions,
     transferNft,
-    bidding
+    bidding,
+    getAllArts,
+    getAlCreater,
+    getSingleCreater,
+    getSingleArts
 
 
 

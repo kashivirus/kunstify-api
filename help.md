@@ -52,3 +52,29 @@ In the context of classes, it's common to use this for instance methods, const f
     when select query is doe 
 
     const [rows , field]  = await creators.dosomeQuery()
+
+
+
+
+
+
+
+SELECT cr.username, cr.walletAddress , cr.firstName, cr.bio, cr.displayImage, cr.coverImage, 
+        ow.username , ow.walletAddress , ow.firstName , ow.bio , ow.displayImage , ow.coverImage, 
+       n.title, n.description, n.image, n.nftType , n.sale, n.auction , n.auction ,
+       fp.tokenId , fp.transactionHash , fp.price , fp.onSale , fp.isSold,
+       auc.tokenId , auc.transactionHash, auc.transactionHash, auc.highestBid, auc.endTimeinSeconds, auc.highestBidder,
+       bid.auction_Id, bid.price, bid.transactionHash, bid.settlement
+    FROM creators cr
+    JOIN nfts n 
+    On (cr.walletAddress = n.creatorwallet)
+    
+    JOIN creators ow
+    ON(ow.walletAddress = n.ownerwallet)
+    
+    JOIN fixedPrice fp
+    ON(fp.owner = cr.walletAddress)
+    JOIN auctions auc 
+    ON (cr.walletAddress = auc.owner_address)
+    JOIN bidding bid 
+    ON (bid.biddingId = cr.walletAddress);

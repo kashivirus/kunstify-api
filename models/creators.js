@@ -44,6 +44,75 @@ class Creators{
         `)
     }
 
+    getAllCreaters(){
+        return db.execute(`
+        SELECT n.username , n.firstName , n.type , n.bio , n.displayImage, n.coverImage, n.verified FROM creators n;
+        `)
+    }
+
+    
+    
+    getSingleCreator(walletAddress , username){
+        return db.execute(`
+        SELECT c.username, n.title, n.description, n.image, n.nftType , n.video,
+        n.sale, n.fixedprice, n.categoryId, n.status FROM creators c JOIN nfts n ON (c.walletAddress = n.ownerwallet)
+        WHERE c.walletAddress = ${walletAddress} OR c.username = '${username}'
+        
+        `)
+    }
+
+    getAllArts(){
+        return db.execute(`
+
+
+        SELECT  
+        n.*,
+        fp.transactionHash, fp.owner, fp.price, fp.onSale, fp.isSold,
+        cr.username, cr.firstName, cr.type, cr.displayImage, cr.coverImage, 
+        ow.username, ow.firstName, ow.type, ow.displayImage, ow.coverImage
+                
+                    FROM nfts n 
+                    JOIN fixedPrice fp 
+                    ON(fp.tokenId  = n.tokenId) AND fp.status =1
+                    
+                    JOIN creators  cr 
+                    ON(cr.walletAddress =  n.creatorwallet)
+                    
+                    JOIN creators ow
+                    ON(ow.walletAddress = n.ownerwallet)
+                    
+                    WHERE n.sale =1;
+
+
+        `)}
+
+    getSingleArts(username){
+        return db.execute(`
+
+
+        SELECT  
+        n.*,
+        fp.transactionHash, fp.owner, fp.price, fp.onSale, fp.isSold,
+        cr.username, cr.firstName, cr.type, cr.displayImage, cr.coverImage, 
+        ow.username, ow.firstName, ow.type, ow.displayImage, ow.coverImage
+                
+                    FROM nfts n 
+                    JOIN fixedPrice fp 
+                    ON(fp.tokenId  = n.tokenId) AND fp.status =1
+                    
+                    JOIN creators  cr 
+                    ON(cr.walletAddress =  n.creatorwallet)
+                    
+                    JOIN creators ow
+                    ON(ow.walletAddress = n.ownerwallet)
+                    
+                    WHERE n.sale =1 AND c.username = ${cr.username};
+        
+        
+        `)
+
+    }
+
     updatnftstus(){
         return db.execute(`UPDATE nfts SET status = 1`)
     }
@@ -57,11 +126,16 @@ class Creators{
         `)
     }
 
+    uPfpStatus(){
+        return db.execute(`UPDATE fixedPrice SET status = 1`)
+    }
+
     mintArt({nft_id,tokenId,title,description,nftType,creatorwallet,ownerwallet,sale,auction,fixedprice,transactionHash,categoryId,status} , image, video){
         return db.execute(`
         INSERT INTO nfts SET image= "${image}",
         title = '${title}',
-        video = '${video}'
+        video = '${video}',
+        tokenId = ${tokenId}
         ` )
     }
 
@@ -99,9 +173,12 @@ class Creators{
 
     verifySignupToken(verificationToken){
         return db.execute(
-            'SELECT verificationToken, createdAt FROM creators WHERE verificationToken = ?',
-            [verificationToken]
+            `
+            SELECT verificationToken,  createdAt from creators WHERE verificationToken = '3df71bec0c5e751c7b1d0a46e928505ae4da6277';
+            `
         );
+
+        // SELECT verificationToken, createdAt FROM creators WHERE verificationToken = '${verificationToken}'
     }
 
     updateVerifyValue(){
