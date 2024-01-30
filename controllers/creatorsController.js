@@ -3,13 +3,13 @@ dotenv.config()
 
 import Creators from "../models/creators.js";
 import bcrypt from "bcrypt";
-import crypto from "crypto";
+import crypto, { Certificate } from "crypto";
 import nodemailer from "nodemailer"
 import EmailSender from "../config/Email-sender.js";
 import OtpGenMail from "../config/OTP.js";
 import { json } from "express";
 
-
+import db from "../config/database.js"
 
 let creators = new Creators;
 let emailSender = new EmailSender;
@@ -27,22 +27,29 @@ const signUp = async(req, res)=>{
     const {walletAddress , username, email , password} = req.body;
     const verificationTokenSend = crypto.randomBytes(20).toString('hex')
     try {
-        if(!walletAddress || !username || !email || !password) return res.json({message:"please enter all details"})
+        if(!walletAddress || !username || !email || !password) return res.status(400).json({message:"please enter all details"})
 
 
         const [rows, fields] = await creators.checkdata()
 
-        if (rows && rows.length > 0) {
-            if (rows[0].email && rows[0].email.length > 0) {
-                return res.json("email already exists");
+        const ifEMailEx = rows.map(async data =>{
+            if(data.email === email ){
+               return res.json({message:"duplicate email"})
             }
-            if (rows[0].walletAddress && rows[0].walletAddress.length > 0) {
-                return res.json("wallet address already exists");
+        })
+        const ifEwall = rows.map(async data =>{
+            if(data.walletAddress === walletAddress){
+                return  res.json({message:"duplicate wallet found"})
             }
-            if (rows[0].username && rows[0].username.length > 0) {
-                return res.json("username already exists");
+        })
+        const ifEusername = rows.map(async data =>{
+            if( data.username === username){
+                return res.json({message:"duplicate username found"})
             }
-        }
+        })
+
+
+        Promise.all([ifEMailEx, ifEwall , ifEusername])
         
         const hashPassword =  await bcrypt.hash(password , 10) 
         const user = await creators.signUP(username, walletAddress, hashPassword, email ,verificationTokenSend )
@@ -58,13 +65,8 @@ const signUp = async(req, res)=>{
                     to: email,
                     subject: "Hello ✔",
                     text: "Hello world?231231",
-                    // html: "<b>Hello world?</b>",
-
-                    // html:`${verificationTokenSend}`,
                     html:`${url}`,
-                    
-                    // text: `Click the following link to verify your email: http://localhost:${port}/verify/${verificationToken}`,
-                    // http://localhost:${port}/verify/${verificationToken}`,
+
                 };
     
                 await emailSender.sendEmail(emailOptions)
@@ -84,10 +86,10 @@ const signUp = async(req, res)=>{
 
 
 const verifySignupToken = async(req, res)=>{
-    const token = req.params
+    const token = req.params.token
     try {
         
-        const [rows, fields] = await creators.verifySignupToken(token)
+        const [rows] = await creators.verifySignupToken(token)
         // console.log(rows)
         if(rows && rows.length > 0){
             let userTime = new Date(rows[0].createdAt)
@@ -112,9 +114,9 @@ const verifySignupToken = async(req, res)=>{
 
 const signIn = async(req, res)=>{
 
-    const {email, password , tokens} = req.body;
+    const {email, password } = req.body;
 
-    if(!email, !password)return res.json({message:"please enter all details"})
+    if(!email && !password)return res.json({message:"please enter all details"})
 
     try {
         const [rows, fields]= await creators.checkEmailPass(email)

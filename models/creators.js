@@ -154,6 +154,14 @@ class Creators{
 
     }
 
+    checkEmail(email){
+        return db.execute(`SELECT * FROM creators WHERE walletAddress= ? ` , [email	])
+    }
+
+    checkUsername(username){
+        return db.execute(`SELECT * FROM creators WHERE walletAddress= ? ` , [username	])
+    }
+
     checkWalletAddress(walletAddress){
         return db.execute(`SELECT * FROM creators WHERE walletAddress= ? ` , [walletAddress	])
     }
