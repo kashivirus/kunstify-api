@@ -18,14 +18,19 @@ class Creators{
 
 
     putOnAuctions(tokenId,transactionHash, reservePrice, highestBid,endTimeinSeconds ,isSettles , highestBidder){
-        const currentDate = new Date();
+    const currentDate = new Date();
     const unixTimestamp = currentDate.getTime();
     const endTime = 24 * 60 * 60;
     const unixTimestampInSeconds = Math.floor(unixTimestamp / 1000 + endTime);
         return db.execute(`
-            UPDATE auctions SET tokenId = ${tokenId}  , transactionHash = ${transactionHash},
-            reservePrice = ${reservePrice} , highestBid = ${highestBid} , endTimeinSeconds  = ${unixTimestampInSeconds} ,
-            isSettles = ${isSettles} , highestBidder = ${highestBidder}
+            UPDATE auctions SET 
+            tokenId = ${tokenId}  , 
+            transactionHash = ${transactionHash},
+            reservePrice = ${reservePrice} , 
+            highestBid = ${highestBid} , 
+            endTimeinSeconds  = ${unixTimestampInSeconds} ,
+            isSettles = ${isSettles} , 
+            highestBidder = ${highestBidder}
         `)
     }
 
@@ -60,20 +65,24 @@ class Creators{
         
         `)
     }
-
+// logically incorrect query
     getAllArts(){
         return db.execute(`
 
 
         SELECT  
         n.*,
+        MAX(auc.highestBid) AS HighestBider, 
         fp.transactionHash, fp.owner, fp.price, fp.onSale, fp.isSold,
         cr.username, cr.firstName, cr.type, cr.displayImage, cr.coverImage, 
         ow.username, ow.firstName, ow.type, ow.displayImage, ow.coverImage
                 
                     FROM nfts n 
-                    JOIN fixedPrice fp 
+                    LEFT JOIN fixedPrice fp 
                     ON(fp.tokenId  = n.tokenId) AND fp.status =1
+
+                    LEFT JOIN auctions auc
+                    ON(auc.tokenId = n.tokenId) and auc.status =1
                     
                     JOIN creators  cr 
                     ON(cr.walletAddress =  n.creatorwallet)
@@ -117,25 +126,50 @@ class Creators{
         return db.execute(`UPDATE nfts SET status = 1`)
     }
 
-    putOnFixPrice(orderID, tokenId , transactionHash , owner){
-        return db.execute(`UPDATE fixedPrice SET orderId = '${orderID}' , 
-            tokenId = '${tokenId}',
-            transactionHash = '${transactionHash}',
-            owner = '${owner}'
-        
+
+    // order id confused
+    // INSERT INTO fixedPrice SET   
+    // tokenId = "mona-tokenid",
+    // transactionHash ="MONA-HASH",
+    // owner = 1, 
+    // price=100;
+    putFixPrice(tokenId,transactionHash,owner,price , orderID){
+        return db.execute(`
+            INSERT INTO fixedPrice
+            SET 
+            tokenId = "${tokenId}",
+            transactionHash = "${transactionHash}", 
+            owner = "${owner}",
+            price = ${price},
+            orderID = ${orderID}
         `)
     }
 
+    fixedpriceSaleStatus(orderID){
+        return db.execute(`
+            UPDATE fixedPrice SET onSale =1 WHERE orderId = ${orderID} 
+        `)
+    }
+
+    
     uPfpStatus(){
         return db.execute(`UPDATE fixedPrice SET status = 1`)
     }
-
+/////////keep only required params, query incomplete
+//  later use ie  === sale, auction , fixedprice, categoryId, categoryId, status
     mintArt({nft_id,tokenId,title,description,nftType,creatorwallet,ownerwallet,sale,auction,fixedprice,transactionHash,categoryId,status} , image, video){
+        console.log("PO")
         return db.execute(`
-        INSERT INTO nfts SET image= "${image}",
-        title = '${title}',
-        video = '${video}',
-        tokenId = ${tokenId}
+        INSERT INTO nfts SET 
+        tokenId = "${tokenId}", 
+        title = "${title}",
+        description ="${description}", 
+        image = "${image}",
+        nftType ="${nftType}", 
+        video ="${video}", 
+        creatorwallet ="${creatorwallet}", 
+        ownerwallet ="${ownerwallet}", 
+        transactionHash ="${transactionHash}"
         ` )
     }
 
@@ -182,7 +216,7 @@ class Creators{
     verifySignupToken(verificationToken){
         return db.execute(
             `
-            SELECT verificationToken,  createdAt from creators WHERE verificationToken = '3df71bec0c5e751c7b1d0a46e928505ae4da6277';
+            SELECT verificationToken,  createdAt from creators WHERE verificationToken = '${verificationToken}';
             `
         );
 

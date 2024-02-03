@@ -198,40 +198,36 @@ const getAllNfts = async(req, res)=>{
 const mintArt = async (req, res, next) => {
     const image = req.image
     const payload = req.body
+    //  tokenId, creatorwallet, ownerwallet, transactionHash
     try {
-        const [a ,b ]   = await creators.mintArt( payload , req.image , req.video)
-        res.json({message:"art has been uploaded" , a, b})
+        console.log(image)
+        // const [data ]   = await creators.mintArt( payload , image , video)
+        const [data ]   = await creators.mintArt( payload , image )
+        res.json({message:"art has been uploaded"})
     } catch (error) {
-        return next({ code: 401, message: error });
+        return next({ code: 401, message: error.message });
     }
 };
 
 
 
 const putOnFixPrice = async(req, res, next)=>{
-
-    const payload = req.body
+    const {tokenId ,  transactionHash, owner , price , orderID } = req.body 
+    // salesId,tokenId,transactionHash,owner,price,onSale,isSold,isCancelled,created_at,status
 
     try {
-        if(payload){
-            const [data] = await creators.putOnFixPrice(payload)
-
-            if(data){
-                // res.json(data)
-                const [rows, fields] = await creators.uPfpStatus()
-                res.json({message:"nft has been put on fixedPrice"})
-            }else{
-                res.json({message:"some error"})
-            }
-
-
-
+        const isListed = await creators.putFixPrice(tokenId, transactionHash, owner, price , orderID)
+        
+        if(isListed){
+            const onSaleStatusTrue = creators.fixedpriceSaleStatus(orderID)
+            return res.status(201).json({message:`TokenId: ${tokenId} is Listed on Fixed Price Successully` })
         }else{
-            return next({ code: 401, message: error });
+            return next({ code: 401, message: "couldnt not put on fixed " });
         }
 
+
     } catch (error) {
-        
+        return next({ code: 401, message: error.message });
     }
 
 }
@@ -305,8 +301,9 @@ const getAllArts = async(req, res, next) =>{
         const [rows, fields] = await creators.getAllArts()
 
         if(rows && rows.length >1){
-            if(rows[0]){
-                return res.status(200),json({nfts:rows[0]})
+            // if(rows[0]){
+            if(rows){
+                return res.status(200),json({nfts:rows})
             }else{
                 return next({ code: 401, message: error });
             }

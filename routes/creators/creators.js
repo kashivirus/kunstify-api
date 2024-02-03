@@ -23,6 +23,7 @@ router.post("/signin/:otpToken" , signInVerify )
 
 
 router.post("/mintArt" , uploadsNFTs  ,  mintArt)
+// router.post("/mintArt"   ,  mintArt)
 // router.post("upload/videos" , uploadsVideos)
 
 
